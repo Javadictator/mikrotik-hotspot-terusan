@@ -13,5 +13,3 @@ Sederhana & fleksibel — proyek ini mengintegrasikan API **Xendit E-Wallet Chec
 - 🧪 Bisa diuji via `curl`, Postman, maupun UI
 
 ---
-
-## 📁 Struktur Proyek
