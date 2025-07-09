@@ -1,15 +1,16 @@
-# 🚀 Xendit E-Wallet Integration via PHP & Ngrok
+# 🔌 WiFi Voucher System dengan Pembayaran Tripay
 
-Sederhana & fleksibel — proyek ini mengintegrasikan API **Xendit E-Wallet Checkout** (ShopeePay, OVO, DANA, dll) menggunakan PHP backend lokal (XAMPP), frontend HTML, dan tunneling melalui **Ngrok** agar dapat diakses dari luar.
+Sistem ini memungkinkan pengguna membeli voucher akses WiFi melalui metode pembayaran digital yang difasilitasi oleh Tripay. Sistem mengintegrasikan frontend responsif, backend API, dan manajemen hotspot MikroTik.
 
----
+## 🚀 Fitur
+- Pembelian voucher WiFi dengan berbagai nominal
+- Pembayaran otomatis via Tripay (QRIS, e-wallet, transfer bank, dll)
+- Penerbitan voucher otomatis setelah pembayaran
+- Integrasi dengan MikroTik Hotspot API
+- Callback handler untuk memverifikasi transaksi
 
-## 📦 Fitur
-
-- 🔐 Menggunakan Xendit E-Wallet Charges API v2 atau v3
-- 📄 Backend PHP (`create_ewallet.php`) menerima JSON & membuat invoice
-- 🌐 Frontend HTML (`portal.html`) untuk memilih paket & redirect checkout
-- ⚙️ Ngrok sebagai bridge domain HTTPS dari localhost
-- 🧪 Bisa diuji via `curl`, Postman, maupun UI
-
----
+## 🧰 Teknologi yang Digunakan
+- Backend: Node.js / PHP / Python (pilih sesuai preferensi)
+- Frontend: HTML, Bootstrap/Tailwind
+- API Pembayaran: [Tripay](https://tripay.co.id)
+- MikroTik: API / Script scheduler untuk generate user
