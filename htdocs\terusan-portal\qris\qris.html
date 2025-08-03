@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scan QRIS</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1c1f22;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .scan-btn {
+      background: rgba(0,0,0,0.4);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1.2rem;
+      padding: 12px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #qr-reader {
+      width: 300px;
+      max-width: 90%;
+      margin-top: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .voucher-group {
+      display: flex;
+      margin-top: 24px;
+      width: 300px;
+      max-width: 90%;
+    }
+
+    .voucher-group .prefix {
+      padding: 12px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px 0 0 8px;
+      min-width: 64px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .voucher-group input {
+      flex: 1;
+      border: none;
+      border-radius: 0 8px 8px 0;
+      padding: 12px;
+      background: rgba(255,255,255,0.1);
+      color: #e0e0e0;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="scanBtn" class="scan-btn">
+    📷 Scan QRIS
+  </button>
+
+  <div id="qr-reader" class="hidden"></div>
+
+  <div class="voucher-group">
+    <div class="prefix">TN</div>
+    <input
+      type="text"
+      id="voucher"
+      maxlength="6"
+      placeholder="6 karakter alfa-num"
+      autocomplete="off"
+    />
+  </div>
+
+  <!-- Panggil library dari /js di root -->
+  <script src="/js/html5-qrcode.min.js" defer></script>
+  <script>
+    const scanBtn      = document.getElementById('scanBtn');
+    const qrReader     = document.getElementById('qr-reader');
+    const voucherInput = document.getElementById('voucher');
+    let html5Scanner;
+
+    scanBtn.addEventListener('click', () => {
+      qrReader.classList.remove('hidden');
+      scanBtn.disabled = true;
+
+      if (!html5Scanner) {
+        html5Scanner = new Html5Qrcode("qr-reader");
+      }
+
+      html5Scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        qrCodeMessage => {
+          const code = qrCodeMessage.trim().slice(-6).toUpperCase();
+          voucherInput.value = code;
+          html5Scanner.stop().then(() => {
+            qrReader.classList.add('hidden');
+            scanBtn.disabled = false;
+          });
+        },
+        () => {
+          // ignore scan errors
+        }
+      ).catch(err => {
+        console.error('QR scan error:', err);
+        scanBtn.disabled = false;
+      });
+    });
+  </script>
+
+</body>
+</html>
