@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Jangan rewrite request ke folder public secara langsung
+    RewriteCond %{REQUEST_URI} !^/public/
+
+    # Semua request yang bukan file atau folder akan diarahkan ke public/
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
