@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Terusan Network PWA Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* reset & base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #1c1f22;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* container */
+    .container {
+      flex: 1;
+      width: 100%;
+      max-width: 380px;
+      margin: auto;
+      padding: 0 16px 16px;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      margin: 16px 0;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      background: #2a2d31;
+      cursor: pointer;
+      transition: background 0.3s;
+      border-bottom: 2px solid transparent;
+      font-weight: bold;
+    }
+    .tab.active {
+      background: #1c1f22;
+      border-bottom-color: #0078ff;
+      color: #fff;
+    }
+
+    /* panels */
+    .tab-content > .panel { display: none; }
+    .tab-content > .panel.active { display: block; }
+
+    /* common card */
+    .card {
+      background: #2a2d31;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* wizard steps */
+    .step {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .step.active { display: flex; }
+
+    h2 {
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    /* marquee */
+    .marquee {
+      font-size: 0.85rem;
+      background: rgba(255,255,255,0.1);
+      padding: 6px 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .marquee span {
+      display: inline-block;
+      animation: scroll 15s linear infinite;
+    }
+    @keyframes scroll {
+      from { transform: translateX(100%); }
+      to   { transform: translateX(-100%); }
+    }
+
+    /* inputs & buttons */
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: #e0e0e0;
+      font-size: 1rem;
+      margin-top: 16px;
+    }
+    button {
+      background: #3a3f44;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #4f565e;
+    }
+
+    /* e-money options */
+    .emoney-options {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .emoney-option {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .emoney-option.selected {
+      background: #0078ff;
+      border-color: #0078ff;
+      color: #000;
+    }
+
+    /* native pay button (mobile only) */
+    #btn-pay-emoney { display: none; }
+    @media (max-width: 768px) {
+      #btn-pay-emoney { display: block; }
+    }
+
+    /* voucher input group */
+    .voucher-group {
+      display: flex;
+      margin-top: 16px;
+    }
+    .voucher-group .prefix {
+      padding: 12px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px 0 0 8px;
+      min-width: 64px;
+      text-align: center;
+    }
+    .voucher-group input {
+      flex: 1;
+      border-radius: 0 8px 8px 0;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-left: none;
+      padding: 12px;
+    }
+
+    .notif {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: #0f0;
+    }
+    .hidden { display: none; }
+
+    /* member login */
+    #memberTab .card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* footer */
+    footer {
+      text-align: center;
+      padding: 16px 0;
+      font-size: 0.8rem;
+      color: #888;
+    }
+    footer img {
+      width: 28px;
+      margin-top: 8px;
+      transition: transform 0.3s, filter 0.3s;
+    }
+    footer img:hover {
+      transform: scale(1.2) rotate(5deg);
+      filter: brightness(1.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- tabs -->
+    <div class="tabs">
+      <div class="tab active" data-target="voucherTab">Voucher</div>
+      <div class="tab" data-target="memberTab">Member</div>
+      <div class="tab">
+        <a
+          href="https://pipefish-possible-highly.ngrok-free.app/terusan-portal/qris/qris.html"
+          target="_blank"
+          rel="noopener"
+          style="color: inherit; text-decoration: none; display: block;"
+        >
+          Scan QRIS
+        </a>
+      </div>
+    </div>
+
+    <!-- panels -->
+    <div class="tab-content">
+      <!-- voucher panel -->
+      <div id="voucherTab" class="panel active">
+        <!-- step 1 -->
+        <div id="pkgView" class="card step active">
+          <div class="marquee"><span id="uaText">Memuat info perangkat & waktu…</span></div>
+          <h2>Pilih Paket</h2>
+          <button onclick="selectPackage('tester',2000)">Tester – Rp 2.000</button>
+          <button onclick="selectPackage('umum',4000)">Umum – Rp 4.000</button>
+          <button onclick="selectPackage('gaming',10000)">Gaming – Rp 10.000</button>
+        </div>
+
+        <!-- step 2 -->
+        <div id="payView" class="card step">
+          <h2>Beli: <span id="pkgLabel"></span></h2>
+
+          <div class="emoney-options">
+            <div class="emoney-option selected" data-value="Dana">Dana</div>
+            <div class="emoney-option" data-value="ShopeePay">ShopeePay</div>
+            <div class="emoney-option" data-value="GoPay">GoPay</div>
+          </div>
+
+          <button id="btn-pay-emoney" onclick="payEmoney()">Bayar via E-Money</button>
+          <button id="waBtn" onclick="sendToWhatsApp()">Kirim permintaan ke WhatsApp</button>
+          <p id="notifWA" class="notif hidden"></p>
+
+          <hr>
+          <button onclick="showStep('loginView')">Saya sudah punya voucher</button>
+        </div>
+
+        <!-- step 3 -->
+        <div id="loginView" class="card step">
+          <h2>Masukkan Kode Voucher</h2>
+          <div class="voucher-group">
+            <div class="prefix" id="prefix">TN</div>
+            <input type="text" id="voucher" maxlength="6" placeholder="6 karakter alfa-num">
+          </div>
+          <button id="pasteBtn" class="hidden">Tempel Clipboard</button>
+          <p id="notif" class="notif hidden">🎉 Kode valid, proses…</p>
+        </div>
+
+        <!-- step 4 -->
+        <div id="successView" class="card step">
+          <h2>Voucher Berhasil!</h2>
+          <p><strong id="displayVoucher"></strong></p>
+        </div>
+      </div>
+
+      <!-- member panel -->
+      <div id="memberTab" class="panel">
+        <div class="card">
+          <h2>Login Member</h2>
+          <input type="text" id="memberId" placeholder="Username / ID">
+          <input type="password" id="memberPwd" placeholder="Password">
+          <button id="memberLoginBtn">Login</button>
+          <p id="memberNotif" class="notif hidden"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- lokal UAParser -->
+  <script src="ua-parser.min.js" defer></script>
+  <script>
+    // tab switcher
+    document.querySelectorAll('.tab[data-target]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.panel').forEach(p => {
+          p.id === tab.dataset.target
+            ? p.classList.add('active')
+            : p.classList.remove('active');
+        });
+        if (tab.dataset.target === 'voucherTab') showStep('pkgView');
+      });
+    });
+
+    // wizard step switcher
+    function showStep(id) {
+      document.querySelectorAll('.step').forEach(s => {
+        s.id === id ? s.classList.add('active') : s.classList.remove('active');
+      });
+    }
+
+    // UA marquee & e-money selector
+    document.addEventListener('DOMContentLoaded', () => {
+      const uaEl = document.getElementById('uaText');
+      function upd() {
+        let info = 'Unknown';
+        if (typeof UAParser === 'function') {
+          const parser = new UAParser();
+          const r = parser.getResult();
+          info = `${r.browser.name} | ${r.os.name} ${r.os.version}`;
+        } else {
+          info = navigator.userAgent.split(' ')[0];
+        }
+        uaEl.textContent = `${info} – ${new Date().toLocaleTimeString('id-ID')}`;
+      }
+      upd();
+      setInterval(upd, 1000);
+
+      document.querySelectorAll('.emoney-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          document.querySelectorAll('.emoney-option')
+            .forEach(e => e.classList.remove('selected'));
+          opt.classList.add('selected');
+        });
+      });
+    });
+
+    // paket logic
+    const prefixMap = { tester:'TN', umum:'UM', gaming:'GM' };
+    let selected = {};
+    function selectPackage(id, amt) {
+      selected = { id, amt, prefix: prefixMap[id] };
+      document.getElementById('pkgLabel').textContent =
+        `${id} – Rp ${amt.toLocaleString()}`;
+      showStep('payView');
+    }
+
+    // pay emoney
+    function payEmoney() {
+      const wallet = document.querySelector('.emoney-option.selected').dataset.value;
+      const no     = '62895366584444';
+      const amt    = selected.amt;
+      let uri;
+      if (wallet === 'Dana') {
+        uri = `dana://transfer?no=${no}&amount=${amt}`;
+      } else if (wallet === 'GoPay') {
+        const upi = `upi://pay?pa=${no}@okaxis&pn=TnNet&am=${amt}`;
+        uri = `intent:${encodeURIComponent(upi)}#Intent;package=com.gojek.app.gopay;end`;
+      } else {
+        uri = `shopeepay://pay?phone=${no}&amount=${amt}`;
+      }
+      window.location.href = uri;
+      setTimeout(() => {
+        const notifWA = document.getElementById('notifWA');
+        notifWA.textContent = `${wallet} tidak terdeteksi. Gunakan WhatsApp.`;
+        notifWA.classList.remove('hidden');
+      }, 1000);
+    }
+
+    // WhatsApp fallback
+    function sendToWhatsApp() {
+      const waBtn   = document.getElementById('waBtn');
+      const notifWA = document.getElementById('notifWA');
+      const wallet  = document.querySelector('.emoney-option.selected').dataset.value;
+      const phone   = '62895366584444';
+      waBtn.disabled = true;
+      let cnt = 3;
+      notifWA.classList.remove('hidden');
+      notifWA.textContent = `Alihkan dalam ${cnt}s…`;
+      const t = setInterval(() => {
+        cnt--;
+        if (cnt > 0) {
+          notifWA.textContent = `Alihkan dalam ${cnt}s…`;
+        } else {
+          clearInterval(t);
+          const text = `Halo, saya beli paket *${selected.id}* (Rp${selected.amt.toLocaleString()}) via *${wallet}*. Mohon QRIS.`;
+          window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+          waBtn.disabled = false;
+          setTimeout(() => {
+            notifWA.classList.add('hidden');
+            showStep('loginView');
+            document.getElementById('prefix').textContent = selected.prefix;
+            initPaste();
+          }, 500);
+        }
+      }, 1000);
+    }
+
+    // clipboard paste
+    function initPaste() {
+      const btn = document.getElementById('pasteBtn');
+      const inp = document.getElementById('voucher');
+      if (!navigator.clipboard) return;
+      navigator.clipboard.readText().then(txt => {
+        const v = txt.trim().slice(0,6);
+        if (/^[A-Za-z0-9]{6}$/.test(v)) {
+          btn.classList.remove('hidden');
+          btn.onclick = () => {
+            inp.value = v;
+            inp.dispatchEvent(new Event('input'));
+          };
+        }
+      });
+      inp.value = '';
+      inp.focus();
+    }
+
+    // voucher validation → success
+    document.getElementById('voucher').addEventListener('input', e => {
+      const val   = e.target.value.trim();
+      const notif = document.getElementById('notif');
+      if (/^[A-Za-z0-9]{6}$/.test(val)) {
+        notif.classList.remove('hidden');
+        setTimeout(() => {
+          showStep('successView');
+          document.getElementById('displayVoucher').textContent =
+            selected.prefix + val.toUpperCase();
+        }, 500);
+      } else {
+        notif.classList.add('hidden');
+      }
+    });
+
+    // member login stub
+    document.getElementById('memberLoginBtn')
+      .addEventListener('click', () => {
+        const user = document.getElementById('memberId').value.trim();
+        const pwd  = document.getElementById('memberPwd').value;
+        const msg  = document.getElementById('memberNotif');
+        if (!user || !pwd) {
+          msg.textContent = 'Username & password wajib diisi!';
+          msg.classList.remove('hidden');
+        } else {
+          msg.textContent = 'Memproses login…';
+          msg.classList.remove('hidden');
+          // TODO: integrasi API login
+        }
+      });
+  </script>
+
+  <footer>
+    &copy; 2025 Terusan Network – All rights reserved.<br>
+    <a href="https://www.facebook.com/TerusanNetwork/" target="_blank">
+      <img src="/terusan-portal/assets/fb-icon.png" alt="FB Terusan">
+    </a>
+  </footer>
+</body>
+</html>
